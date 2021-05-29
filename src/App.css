@@ -1,38 +1,123 @@
-.App {
-  text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.container {
+  width: 78.5rem;
+  height: 43rem;
+  background-color: white;
+  position: absolute;
+  top: 1rem;
+  left: 8.75rem;
+  box-shadow: 0px 0px 0.75rem #c6c6bf;
   display: flex;
-  flex-direction: column;
+}
+.contacts {
+  width: 30%;
+  height: 100%;
+  border-right: 1px solid #e5ddd5;
+}
+
+.chat {
+  width: 70%;
+  height: 100%;
+}
+
+.topBar {
+  width: 100%;
+  height: 7.75%;
+  background-color: #ededed;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+}
+.dp{
+  height: 2.5rem;
+  width: 2.5rem;
+  margin:1rem;
+  border-radius: 50%;
 }
 
-.App-link {
-  color: #61dafb;
+.details {
+  height: 100%;
+  width: 50rem;
+  margin-top:0.5rem;
+}
+.gName{
+  font-size: 1rem;
+}
+.gMembers{
+  font-size: 0.8rem;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.icons {
+  font-size: 1.5rem;
+  width: 4.5rem;
+  margin-right:1.5rem;
+  color: #949494;
+  display:flex;
+  justify-content: space-between;
+
+}
+
+.messageSection {
+  width: 100%;
+  height: 84.25%;
+  background-image: url(https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png);
+  background-size: 50%;
+  overflow-y: scroll;
+}
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #b3b3b3; 
+}
+
+
+
+
+
+
+
+
+.sendBar {
+  width: 100%;
+  height: 8%;
+  background-color: #ededed;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.botIcons{
+  font-size: 1.75rem;
+  width: 4.5rem;
+  margin-left: 1rem;
+  color: #949494;
+  display:flex;
+  justify-content: space-between;
+}
+
+.messageField{
+  width:43rem;
+  height:2rem;
+  border: hidden;
+  border-radius:1.3rem;
+  padding:0.25rem;
+  padding-left:1rem;
+}
+::placeholder{
+  opacity:0.6;
+}
+:focus{
+  outline:none;
+}
+
+.micIcon{
+  font-size: 1.75rem;
+  margin-right:1.25rem;
+  width: 2rem;
+  color: #949494;
+  display: flex;
+  align-items: center;
 }
