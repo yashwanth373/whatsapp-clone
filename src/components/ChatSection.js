@@ -4,7 +4,7 @@ import { BiDotsVerticalRounded } from "react-icons/bi";
 import { CgSmileMouthOpen } from "react-icons/cg";
 import { MdMic } from "react-icons/md";
 import { FiChevronDown } from "react-icons/fi";
-export default function ChatSection() {
+export default function ChatSection({setinfoOpen,width}) {
   let dummyUserId = 2750192;
   const [group] = useState({
     id: "",
@@ -26,35 +26,48 @@ export default function ChatSection() {
     setMessages([...messages, message]);
   }
   return (
-    <div className="chat">
-      <TopBar name={group.name} users={group.users} img={group.img} />
-      <MessageSection messages={messages} dummyUserId={dummyUserId} />
-      <SendBar sendMessage={sendMessage} dummyUserId={dummyUserId} />
-    </div>
+        <div className="chat" style={{ width: width }}>
+          <TopBar
+            name={group.name}
+            users={group.users}
+            img={group.img}
+            setinfoOpen={setinfoOpen}
+          />
+          <MessageSection messages={messages} dummyUserId={dummyUserId} />
+          <SendBar sendMessage={sendMessage} dummyUserId={dummyUserId} />
+        </div>
   );
 }
 
-function TopBar({ name, users, img }) {
+function TopBar({ name, users, img, setinfoOpen }) {
   const [ddtoggle, setddtoggle] = useState(false);
   const wref = useRef(null);
   function useOutsideAlerter(ref) {
     useEffect(() => {
       function handleClickOutside(event) {
         if (ref.current && !ref.current.contains(event.target)) {
-          setddtoggle(!ddtoggle)
+          setddtoggle(!ddtoggle);
         }
       }
       document.addEventListener("mousedown", handleClickOutside);
       return () => {
         document.removeEventListener("mousedown", handleClickOutside);
       };
-    }, [ref,ddtoggle]);
+    }, [ref, ddtoggle]);
   }
   useOutsideAlerter(wref);
   function DropDown() {
     return (
       <div ref={wref} className="ddMenu">
-        <span className="ddItem">Contact info</span>
+        <span
+          className="ddItem"
+          onClick={() => {
+            setinfoOpen(true);
+            setddtoggle(!ddtoggle);
+          }}
+        >
+          Contact info
+        </span>
         <span className="ddItem">Select Messages</span>
         <span className="ddItem">Mute Notifications</span>
         <span className="ddItem">Delete Chat</span>
@@ -63,7 +76,7 @@ function TopBar({ name, users, img }) {
   }
   return (
     <div className="topBar">
-      <div onClick={() => alert("dp clicked")}>
+      <div onClick={() => setinfoOpen(true)}>
         {img !== "" ? (
           <img className="dp" src={img} alt="dp" />
         ) : (
@@ -77,7 +90,7 @@ function TopBar({ name, users, img }) {
       <div
         className="details"
         onClick={() => {
-          alert("Details clicked");
+          setinfoOpen(true);
         }}
       >
         <section className="gName">{name}</section>
@@ -124,11 +137,13 @@ function MessageSection({ messages, dummyUserId }) {
     <div className="messageSection">
       <div className="message">
         {messages.map((message) =>
-          message.senderId === dummyUserId ? (
-            <Sent message={message} />
-          ) : (
-            <Received message={message} />
-          )
+          message.message !== "" ? (
+            message.senderId === dummyUserId ? (
+              <Sent message={message} />
+            ) : (
+              <Received message={message} />
+            )
+          ) : null
         )}
       </div>
     </div>
@@ -175,7 +190,7 @@ function SendBar({ sendMessage, dummyUserId }) {
         <CgSmileMouthOpen />
         <AiOutlinePaperClip />
       </div>
-      <div>
+      <div className="form">
         <form
           onSubmit={(e) => {
             handleSubmit(e);

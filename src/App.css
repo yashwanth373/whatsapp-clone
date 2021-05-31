@@ -17,7 +17,6 @@
 }
 
 .chat {
-  width: 70%;
   height: 100%;
 }
 
@@ -39,7 +38,7 @@
 
 .details {
   height: 100%;
-  width: 50rem;
+  width: 90%;
   margin-top: 0.5rem;
   cursor: pointer;
 }
@@ -63,20 +62,19 @@
 @keyframes scale-in-tr {
   0% {
     -webkit-transform: scale(0);
-            transform: scale(0);
+    transform: scale(0);
     -webkit-transform-origin: 100% 0%;
-            transform-origin: 100% 0%;
+    transform-origin: 100% 0%;
     opacity: 1;
   }
   100% {
     -webkit-transform: scale(1);
-            transform: scale(1);
+    transform: scale(1);
     -webkit-transform-origin: 100% 0%;
-            transform-origin: 100% 0%;
+    transform-origin: 100% 0%;
     opacity: 1;
   }
 }
-
 
 .ddMenu {
   width: 11rem;
@@ -88,11 +86,11 @@
   top: 3rem;
   background-color: white;
   border-radius: 0.2rem;
-  box-shadow: 0 2px 5px 0 rgba(0,0,0,.26),0 2px 10px 0 rgba(0,0,0,.16);
+  box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26), 0 2px 10px 0 rgba(0, 0, 0, 0.16);
   animation: scale-in-tr 0.3s ease-out both;
 }
 .ddItem {
-  width:80%;
+  width: 80%;
   height: 20%;
   margin-top: 2%;
   padding: 2% 10%;
@@ -234,9 +232,13 @@
   display: flex;
   justify-content: space-between;
 }
+.form {
+  width: 78%;
+  margin-right: 2%;
+}
 
 .messageField {
-  width: 43rem;
+  width: 95%;
   height: 2rem;
   border: hidden;
   border-radius: 1.3rem;
@@ -252,9 +254,69 @@
 
 .micIcon {
   font-size: 1.75rem;
-  margin-right: 1.25rem;
+  margin-right: 1%;
   width: 2rem;
   color: #949494;
   display: flex;
   align-items: center;
+}
+
+@keyframes scale-up-hor-right {
+  0% {
+    transform: scaleX(0.4);
+    transform-origin: 100% 100%;
+  }
+  100% {
+    transform: scaleX(1);
+    transform-origin: 100% 100%;
+  }
+}
+
+.info {
+  width: 30%;
+  height: 43rem;
+  animation: scale-up-hor-right 0.2s ease both;
+}
+
+.infoTop {
+  width: 100%;
+  height: 7.75%;
+  background-color: #ededed;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+@keyframes scale-up-ver-top {
+  0% {
+    transform: scaleY(0.8);
+    opacity: 0;
+    transform-origin: 100% 0%;
+  }
+  100% {
+    transform: scaleY(1);
+    opacity: 1;
+    transform-origin: 100% 0%;
+  }
+}
+
+.infoRest {
+  background-color: red;
+  height: 100%;
+  overflow-y: scroll;
+  animation: scale-up-ver-top 0.2s ease both;
+  animation-delay: 0.5s;
+}
+
+.closeIcon {
+  font-size: 1.5rem;
+  color: #949494;
+  margin: 0.5rem;
+  margin-top: 0.9rem;
+  margin-left: 1.25rem;
+  cursor: pointer;
+}
+.grpinfo {
+  margin-left: 1.1rem;
+  font-size: 0.9rem;
 }
