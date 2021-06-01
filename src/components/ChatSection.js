@@ -4,7 +4,7 @@ import { BiDotsVerticalRounded } from "react-icons/bi";
 import { CgSmileMouthOpen } from "react-icons/cg";
 import { MdMic } from "react-icons/md";
 import { FiChevronDown } from "react-icons/fi";
-export default function ChatSection({setinfoOpen,width}) {
+export default function ChatSection({ setinfoOpen, width }) {
   let dummyUserId = 2750192;
   const [group] = useState({
     id: "",
@@ -26,36 +26,37 @@ export default function ChatSection({setinfoOpen,width}) {
     setMessages([...messages, message]);
   }
   return (
-        <div className="chat" style={{ width: width }}>
-          <TopBar
-            name={group.name}
-            users={group.users}
-            img={group.img}
-            setinfoOpen={setinfoOpen}
-          />
-          <MessageSection messages={messages} dummyUserId={dummyUserId} />
-          <SendBar sendMessage={sendMessage} dummyUserId={dummyUserId} />
-        </div>
+    <div className="chat" style={{ width: width }}>
+      <TopBar
+        name={group.name}
+        users={group.users}
+        img={group.img}
+        setinfoOpen={setinfoOpen}
+      />
+      <MessageSection messages={messages} dummyUserId={dummyUserId} />
+      <SendBar sendMessage={sendMessage} dummyUserId={dummyUserId} />
+    </div>
   );
+}
+
+function useOutsideAlerter(ref, setddtoggle, ddtoggle) {
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (ref.current && !ref.current.contains(event.target)) {
+        setddtoggle(!ddtoggle);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [ref, ddtoggle]);
 }
 
 function TopBar({ name, users, img, setinfoOpen }) {
   const [ddtoggle, setddtoggle] = useState(false);
   const wref = useRef(null);
-  function useOutsideAlerter(ref) {
-    useEffect(() => {
-      function handleClickOutside(event) {
-        if (ref.current && !ref.current.contains(event.target)) {
-          setddtoggle(!ddtoggle);
-        }
-      }
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => {
-        document.removeEventListener("mousedown", handleClickOutside);
-      };
-    }, [ref, ddtoggle]);
-  }
-  useOutsideAlerter(wref);
+  useOutsideAlerter(wref, setddtoggle, ddtoggle);
   function DropDown() {
     return (
       <div ref={wref} className="ddMenu">
@@ -111,11 +112,26 @@ function TopBar({ name, users, img, setinfoOpen }) {
 }
 
 function MessageSection({ messages, dummyUserId }) {
+  const [ddtoggle, setddtoggle] = useState(false);
+  const wref = useRef(null);
+  useOutsideAlerter(wref, setddtoggle, ddtoggle);
+  const Delete = () => {
+     return (
+       <div ref={wref} className="deldd">
+         <span className="delddItem">Delete Message</span>
+       </div>
+     );
+  }
   const Sent = ({ message }) => {
     return (
       <div className="sent">
         <button className="dd">
-          <FiChevronDown className="ddIcon" />
+          <FiChevronDown
+            className="ddIcon"
+            onClick={() => {
+              setddtoggle(true);
+            }}
+          />
         </button>
         <span className="msg">{message.message}</span>
         <span className="time">{message.time.split(",")[0]}</span>
@@ -126,7 +142,12 @@ function MessageSection({ messages, dummyUserId }) {
     return (
       <div className="received">
         <button className="dd">
-          <FiChevronDown className="ddIcon" />
+          <FiChevronDown
+            className="ddIcon"
+            onClick={() => {
+              setddtoggle(true);
+            }}
+          />
         </button>
         <span className="msg">{message.message}</span>
         <span className="time">{message.time.split(",")[0]}</span>
@@ -145,6 +166,7 @@ function MessageSection({ messages, dummyUserId }) {
             )
           ) : null
         )}
+        {ddtoggle && <Delete />}
       </div>
     </div>
   );
