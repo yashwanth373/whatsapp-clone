@@ -130,11 +130,9 @@
 .dd {
   position: absolute;
   align-self: flex-end;
-  width: 4rem;
-  padding-left: 2rem;
   justify-self: flex-start;
   font-size: 1.5rem;
-  color: rgba(0, 0, 0, 0.3);
+  color: #df3333;
   visibility: hidden;
   background: transparent;
   outline: none;
@@ -143,7 +141,7 @@
 }
 @keyframes slide-in-fwd-right {
   0% {
-    transform: translateZ(-1400px) translateX(0.5rem);
+    transform: translateZ(-1400px) translateX(0.1rem);
     opacity: 0;
   }
   100% {
@@ -160,8 +158,14 @@
 .sent .dd {
   background-image: linear-gradient(
     to right,
-    rgba(255, 0, 0, 0),
+    rgba(220, 248, 198, 0.1),
     rgba(220, 248, 198, 0.8),
+    rgba(220, 248, 198, 1),
+    rgba(220, 248, 198, 1),
+    rgba(220, 248, 198, 1),
+    rgba(220, 248, 198, 1),
+    rgba(220, 248, 198, 1),
+    rgba(220, 248, 198, 1),
     rgba(220, 248, 198, 1),
     rgba(220, 248, 198, 1),
     rgba(220, 248, 198, 1)
@@ -201,15 +205,37 @@
 
 .sent {
   background-color: #dcf8c6;
+  max-width: 25rem;
+  min-width: 10rem;
+  padding: 0.5rem 0.5rem;
+  margin: 0.5rem;
+  margin-bottom: 1rem;
+  display: flex;
+  position: relative;
+  flex-direction: column;
+  border-radius: 0.5rem;
+  align-self: flex-end;
+}
+.msgandicon {
+  display: flex;
+}
+.imgsent {
+  background-color: #dcf8c6;
   width: fit-content;
   max-width: 25rem;
   min-width: 10rem;
   padding: 0.5rem 0.5rem;
   margin: 0.5rem;
+  position: relative;
   display: flex;
   flex-direction: column;
   border-radius: 0.5rem;
   align-self: flex-end;
+}
+.img img {
+  width: 100%;
+  height: 100%;
+  border-radius: 0.5rem;
 }
 .msg {
   max-width: 25rem;
@@ -229,11 +255,113 @@
   min-width: 10rem;
   padding: 0.5rem 0.5rem;
   margin: 0.5rem;
+  position: relative;
   display: flex;
   flex-direction: column;
   border-radius: 0.5rem;
   align-self: flex-start;
   display: flex;
+}
+.imgreceived {
+  background-color: #ffffff;
+  width: fit-content;
+  max-width: 25rem;
+  min-width: 10rem;
+  padding: 0.5rem 0.5rem;
+  margin: 0.5rem;
+  display: flex;
+  position: relative;
+  flex-direction: column;
+  border-radius: 0.5rem;
+  align-self: flex-start;
+  display: flex;
+}
+.imgsent:hover .dd,
+.imgreceived:hover .dd {
+  visibility: visible;
+  animation: slide-in-fwd-right 0.1s ease-in-out both;
+}
+.imgsent .dd {
+  background-image: radial-gradient(
+    at top right,
+    rgba(0, 0, 0, 0.6),
+    rgba(0, 0, 0, 0.4),
+    rgba(0, 0, 0, 0.3),
+    rgba(0, 0, 0, 0.2),
+    rgba(0, 0, 0, 0.1),
+    rgba(0, 0, 0, 0),
+    rgba(0, 0, 0, 0),
+    rgba(0, 0, 0, 0)
+  );
+  color: white;
+  width: 7rem;
+  height: 3rem;
+  border-top-right-radius: 0.5rem;
+  border-bottom-left-radius: 100%;
+}
+.imgsent .ddIcon {
+  margin-left: 2rem;
+}
+.imgreceived .dd {
+  background-image: radial-gradient(
+    at top right,
+    rgba(0, 0, 0, 0.6),
+    rgba(0, 0, 0, 0.4),
+    rgba(0, 0, 0, 0.3),
+    rgba(0, 0, 0, 0.2),
+    rgba(0, 0, 0, 0.1),
+    rgba(0, 0, 0, 0),
+    rgba(0, 0, 0, 0),
+    rgba(0, 0, 0, 0)
+  );
+  color: white;
+  width: 7rem;
+  border-top-right-radius: 0.5rem;
+  border-bottom-left-radius: 100%;
+}
+
+.modal{
+  position: absolute;
+  top:15rem;
+  left:35rem;
+  width:25rem;
+  height:5rem;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  padding:1rem;
+  padding-top: 1rem;
+  justify-content: space-between;
+}
+.modalbuttons{
+  display: flex;
+  justify-content: flex-end;
+  margin-right: 1rem;
+}
+.cancelbutton{
+  width:5rem;
+  text-align: center;
+  border: 1px solid rgb(233, 232, 232);
+  padding:0.5rem;
+  margin-right: 0.3rem;
+  color: #07bc4c;
+  cursor: pointer;
+  border-radius: 0.2rem;
+}
+.cancelbutton:hover{
+  box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26), 0 2px 10px 0 rgba(0, 0, 0, 0.16);
+}
+.deletebutton{
+  width:7rem;
+  text-align: center;
+  color: white;
+  padding: 0.5rem;
+  cursor: pointer;
+  border-radius: 0.2rem;
+  background-color: #07bc4c;
+}
+.deletebutton:hover{
+  box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26), 0 2px 10px 0 rgba(0, 0, 0, 0.16);
 }
 
 .sendBar {
@@ -358,8 +486,8 @@
   overflow: hidden;
 }
 .infodp img {
-  height: 12rem;
-  width: 12rem;
+  height:100%;
+  width:100%;
   border-radius: 50%;
 }
 .dphover {

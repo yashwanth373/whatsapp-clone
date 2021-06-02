@@ -2,8 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { AiOutlineSearch, AiOutlinePaperClip } from "react-icons/ai";
 import { BiDotsVerticalRounded } from "react-icons/bi";
 import { CgSmileMouthOpen } from "react-icons/cg";
-import { MdMic } from "react-icons/md";
-import { FiChevronDown } from "react-icons/fi";
+import { MdMic, MdDelete } from "react-icons/md";
 export default function ChatSection({ setinfoOpen, width }) {
   let dummyUserId = 2750192;
   const [group] = useState({
@@ -33,7 +32,7 @@ export default function ChatSection({ setinfoOpen, width }) {
         img={group.img}
         setinfoOpen={setinfoOpen}
       />
-      <MessageSection messages={messages} dummyUserId={dummyUserId} />
+      <MessageSection messages={messages} dummyUserId={dummyUserId} setMessages={setMessages} />
       <SendBar sendMessage={sendMessage} dummyUserId={dummyUserId} />
     </div>
   );
@@ -111,62 +110,104 @@ function TopBar({ name, users, img, setinfoOpen }) {
   );
 }
 
-function MessageSection({ messages, dummyUserId }) {
-  const [ddtoggle, setddtoggle] = useState(false);
-  const wref = useRef(null);
-  useOutsideAlerter(wref, setddtoggle, ddtoggle);
-  const Delete = () => {
-     return (
-       <div ref={wref} className="deldd">
-         <span className="delddItem">Delete Message</span>
-       </div>
-     );
+function MessageSection({ messages, dummyUserId,setMessages }) {
+  const messagesEndRef = useRef(null);
+  const scrollToBottom = () => {
+    messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(scrollToBottom, [messages]);
+  function deletemsg(message) {
+    setMessages(messages.filter((msg) => msg.id !== message.id));
   }
-  const Sent = ({ message }) => {
+  function Sent({message}){
     return (
-      <div className="sent">
-        <button className="dd">
-          <FiChevronDown
-            className="ddIcon"
-            onClick={() => {
-              setddtoggle(true);
-            }}
-          />
-        </button>
-        <span className="msg">{message.message}</span>
-        <span className="time">{message.time.split(",")[0]}</span>
-      </div>
+        <div className="sent">
+          <span className="msg">{message.message}</span>
+          <button className="dd">
+            <MdDelete
+              className="ddIcon"
+              onClick={() => {
+                deletemsg(message)
+              }}
+            />
+          </button>
+          <span className="time">{message.time.split(",")[0]}</span>
+        </div>
     );
   };
-  const Received = ({ message }) => {
+  function Received({message}){
     return (
-      <div className="received">
-        <button className="dd">
-          <FiChevronDown
-            className="ddIcon"
-            onClick={() => {
-              setddtoggle(true);
-            }}
-          />
-        </button>
-        <span className="msg">{message.message}</span>
-        <span className="time">{message.time.split(",")[0]}</span>
-      </div>
+        <div className="received">
+          <button className="dd">
+            <MdDelete
+              className="ddIcon"
+              onClick={() => {
+                deletemsg(message)
+              }}
+            />
+          </button>
+          <span className="msg">{message.message}</span>
+          <span className="time">{message.time.split(",")[0]}</span>
+        </div>
+    );
+  };
+  const ImgSent = ({message}) => {
+    console.log(message)
+    return (
+        <div className="imgsent">
+          <button className="dd">
+            <MdDelete
+              className="ddIcon"
+              onClick={() => {
+                deletemsg(message)
+              }}
+            />
+          </button>
+          <span className="img">
+            <img src={message.imglink} />
+          </span>
+          <span className="time">{message.time.split(",")[0]}</span>
+        </div>
+    );
+  };
+  const ImgReceived = ({message}) => {
+    return (
+        <div className="imgreceived">
+          <button className="dd">
+            <MdDelete
+              className="ddIcon"
+              onClick={() => {
+                deletemsg(message)
+              }}
+            />
+          </button>
+          <span className="img">
+            <img src={message.imglink} />
+          </span>
+          <span className="time">{message.time.split(",")[0]}</span>
+        </div>
     );
   };
   return (
     <div className="messageSection">
       <div className="message">
         {messages.map((message) =>
-          message.message !== "" ? (
-            message.senderId === dummyUserId ? (
-              <Sent message={message} />
-            ) : (
-              <Received message={message} />
-            )
-          ) : null
+          !message.type ? (
+            message.message !== "" ? (
+              message.senderId === dummyUserId ? (
+                <Sent message={message} />
+              ) : (
+                <Received message={message} />
+              )
+            ) : null
+          ) : message.senderId === dummyUserId ? (
+            <ImgSent message={message} />
+          ) : (
+            <ImgReceived message={message} />
+          )
         )}
-        {ddtoggle && <Delete />}
+        <div ref={messagesEndRef} />
       </div>
     </div>
   );
@@ -206,11 +247,46 @@ function SendBar({ sendMessage, dummyUserId }) {
     e.preventDefault();
     // setMessage(e.target.value)
   }
+  const hiddenFileInput = useRef(null);
+  const handleClick = () => {
+    hiddenFileInput.current.click();
+  };
+  const handleChange = (event) => {
+    let date = new Date();
+    var reader = new FileReader();
+    reader.readAsDataURL(event.target.files[0]);
+    reader.onload = function (e) {
+      sendMessage({
+        ...message,
+        id: Date.now(),
+        type: "img",
+        imglink: reader.result,
+        senderId: dummyUserId,
+        time:
+          date.getHours() +
+          ":" +
+          ((date.getMinutes() < 10 ? "0" : "") + date.getMinutes()) +
+          "," +
+          date.getDate() +
+          "/" +
+          (date.getMonth() + 1) +
+          "/" +
+          date.getFullYear(),
+      });
+    };
+  };
+
   return (
     <div className="sendBar">
       <div className="botIcons">
         <CgSmileMouthOpen />
-        <AiOutlinePaperClip />
+        <AiOutlinePaperClip onClick={handleClick} />
+        <input
+          type="file"
+          ref={hiddenFileInput}
+          onChange={handleChange}
+          style={{ display: "none" }}
+        />
       </div>
       <div className="form">
         <form

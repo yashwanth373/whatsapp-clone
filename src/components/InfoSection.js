@@ -31,26 +31,47 @@ export default function InfoSection({ setinfoOpen }) {
     }, [ref, ddtoggle]);
   }
   useOutsideAlerter(wref);
+  const hiddenFileInput = useRef(null);
+  const handleClick = () => {
+    hiddenFileInput.current.click();
+  };
+  const handleChange = (event) => {
+    let date = new Date();
+    var reader = new FileReader();
+    reader.readAsDataURL(event.target.files[0]);
+    reader.onload = function (e) {
+      setGroup({
+        ...group,
+        img: reader.result,
+      });
+    };
+  };
   function DropDown() {
     return (
       <div ref={wref} className="dpdd">
-        <span className="dpddItem">Upload Photo</span>
+        <span className="dpddItem" onClick={handleClick}>
+          Upload Photo
+        </span>
+        <input
+          type="file"
+          ref={hiddenFileInput}
+          onChange={handleChange}
+          style={{ display: "none" }}
+        />
       </div>
     );
   }
-  function Edit({ value,changefield }) {
-    function handleSubmit(e){
-      if(changefield==="name"){
+  function Edit({ value, changefield }) {
+    function handleSubmit(e) {
+      if (changefield === "name") {
         setGroup({ ...group, name: e.target.value });
-      }
-      else if(changefield==="desc"){
+      } else if (changefield === "desc") {
         setGroup({ ...group, desc: e.target.value });
       }
-      
-      e.preventDefault();
 
+      e.preventDefault();
     }
-    if(changefield==="name"){
+    if (changefield === "name") {
       return (
         <div className="editform">
           <form autoComplete="off" onSubmit={(e) => handleSubmit(e)}>
@@ -66,9 +87,7 @@ export default function InfoSection({ setinfoOpen }) {
           </form>
         </div>
       );
-
-    }
-    else if(changefield==="desc"){
+    } else if (changefield === "desc") {
       return (
         <div className="editform">
           <form autoComplete="off" onSubmit={(e) => handleSubmit(e)}>
@@ -83,9 +102,7 @@ export default function InfoSection({ setinfoOpen }) {
           </form>
         </div>
       );
-
     }
-    
   }
   return (
     <div className="info">
@@ -145,7 +162,7 @@ export default function InfoSection({ setinfoOpen }) {
             <span className="gdesc">
               {editgdesc ? (
                 <Edit changefield={"desc"} value={group.desc} />
-              ) : group.desc ==="" ? (
+              ) : group.desc === "" ? (
                 "Add group description"
               ) : (
                 <div className="agdesc">{group.desc}</div>
@@ -161,7 +178,6 @@ export default function InfoSection({ setinfoOpen }) {
             {!editgdesc ? <MdEdit /> : <GrCheckmark />}
           </span>
         </div>
-        {/* <div className="members"></div> */}
         <div className="infoFooter">
           <div className="exitbutton">
             <span className="exiticon">
