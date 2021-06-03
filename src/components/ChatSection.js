@@ -3,23 +3,18 @@ import { AiOutlineSearch, AiOutlinePaperClip } from "react-icons/ai";
 import { BiDotsVerticalRounded } from "react-icons/bi";
 import { CgSmileMouthOpen } from "react-icons/cg";
 import { MdMic, MdDelete } from "react-icons/md";
-export default function ChatSection({ setinfoOpen, width }) {
+import { IoMdClose } from "react-icons/io";
+import db from "../firebase";
+export default function ChatSection({ setinfoOpen, width, group }) {
   let dummyUserId = 2750192;
-  const [group] = useState({
-    id: "",
-    name: "Dance Group",
-    img: "",
-    users: [],
-    createdAt: "",
-  });
-  const [messages, setMessages] = useState([
-    {
-      id: Date.now(),
-      senderId: 2323245,
-      message: "Hello World",
-      time: "14:52,30/5/2021",
-    },
-  ]);
+  const [messages, setMessages] = useState([]);
+  useEffect(() => {
+    db.collection("groups/" + group.id + "/messages").onSnapshot((snapshot) => {
+      snapshot.docs.map((doc) => {
+        setMessages([...messages,doc.data()])
+      });
+    });
+  }, []);
 
   function sendMessage(message) {
     setMessages([...messages, message]);
@@ -32,7 +27,11 @@ export default function ChatSection({ setinfoOpen, width }) {
         img={group.img}
         setinfoOpen={setinfoOpen}
       />
-      <MessageSection messages={messages} dummyUserId={dummyUserId} setMessages={setMessages} />
+      <MessageSection
+        messages={messages}
+        dummyUserId={dummyUserId}
+        setMessages={setMessages}
+      />
       <SendBar sendMessage={sendMessage} dummyUserId={dummyUserId} />
     </div>
   );
@@ -53,9 +52,35 @@ function useOutsideAlerter(ref, setddtoggle, ddtoggle) {
 }
 
 function TopBar({ name, users, img, setinfoOpen }) {
+  console.log(users);
+  let names = [];
+  const [usernames, setUsernames] = useState([]);
+  useEffect(() => {
+    let snaps = users.map((userId) => {
+      let snap = db.collection("users").doc(userId).get();
+      return snap;
+    });
+    Promise.all(snaps).then((docs) => {
+      setUsernames(
+        docs.map((doc) => {
+          return doc.data().name;
+        })
+      );
+    });
+  }, []);
   const [ddtoggle, setddtoggle] = useState(false);
   const wref = useRef(null);
   useOutsideAlerter(wref, setddtoggle, ddtoggle);
+  function UserNamesList(){
+    let dummynames=[]
+    for(var i=0;i<usernames.length-1;i++)
+    {
+      dummynames.push(usernames[i])
+      dummynames.push(",")
+    }
+    dummynames.push(usernames[i])
+    return <>{dummynames}</>
+  }
   function DropDown() {
     return (
       <div ref={wref} className="ddMenu">
@@ -93,9 +118,9 @@ function TopBar({ name, users, img, setinfoOpen }) {
           setinfoOpen(true);
         }}
       >
-        <section className="gName">{name}</section>
+        <section className="gName"><span>{name}</span></section>
         <section className="gMembers">
-          {users.length !== 0 ? users : "You, Me"}
+          {usernames.length !== 0 ? <UserNamesList/>:""}
         </section>
       </div>
       <div className="icons">
@@ -110,83 +135,160 @@ function TopBar({ name, users, img, setinfoOpen }) {
   );
 }
 
-function MessageSection({ messages, dummyUserId,setMessages }) {
+function MessageSection({ messages, dummyUserId, setMessages }) {
+  const [showdeletemodal, setShowDeleteModal] = useState(false);
+  const [showImgmodal, setShowImgModal] = useState(false);
+  const [selectedmessageId, setSelectedMessageId] = useState("");
+  const [selectedImgSrc, setSelectedImgSrc] = useState("");
   const messagesEndRef = useRef(null);
   const scrollToBottom = () => {
     messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(scrollToBottom, [messages]);
-  function deletemsg(message) {
-    setMessages(messages.filter((msg) => msg.id !== message.id));
+  function deletemsg() {
+    setMessages(messages.filter((msg) => msg.id !== selectedmessageId));
   }
-  function Sent({message}){
+
+  function DeleteModal({ type }) {
     return (
+      <div className="modal">
+        <div className="modalTitle">Delete {type}?</div>
+        <div className="modalbuttons">
+          <div
+            className="cancelbutton"
+            onClick={() => {
+              setShowDeleteModal(false);
+            }}
+          >
+            CANCEL
+          </div>
+          <div
+            className="deletebutton"
+            onClick={() => {
+              setShowDeleteModal(false);
+              deletemsg();
+            }}
+          >
+            DELETE
+          </div>
+        </div>
+      </div>
+    );
+  }
+  function ImgModal() {
+    return (
+      <div className="imgmodal">
+        <span className="closebutton">
+          <IoMdClose
+            onClick={() => {
+              setShowImgModal(!showImgmodal);
+            }}
+          />
+        </span>
+        <img src={selectedImgSrc} alt="image" />
+      </div>
+    );
+  }
+  function Sent({ message }) {
+    return (
+      <>
         <div className="sent">
           <span className="msg">{message.message}</span>
           <button className="dd">
             <MdDelete
               className="ddIcon"
               onClick={() => {
-                deletemsg(message)
+                setSelectedMessageId(message.id);
+                setShowDeleteModal(true);
               }}
             />
           </button>
           <span className="time">{message.time.split(",")[0]}</span>
         </div>
+        {showdeletemodal && <DeleteModal type={"Message"} />}
+      </>
     );
-  };
-  function Received({message}){
+  }
+  function Received({ message }) {
     return (
+      <>
         <div className="received">
-          <button className="dd">
+          {/* <button className="dd">
             <MdDelete
               className="ddIcon"
               onClick={() => {
-                deletemsg(message)
+                setSelectedMessageId(message.id);
+                setShowDeleteModal(true);
               }}
             />
-          </button>
+          </button> */}
           <span className="msg">{message.message}</span>
           <span className="time">{message.time.split(",")[0]}</span>
         </div>
+        {showdeletemodal && <DeleteModal />}
+      </>
     );
-  };
-  const ImgSent = ({message}) => {
-    console.log(message)
+  }
+  const ImgSent = ({ message }) => {
+    console.log(message);
     return (
+      <>
         <div className="imgsent">
           <button className="dd">
             <MdDelete
               className="ddIcon"
               onClick={() => {
-                deletemsg(message)
+                setSelectedMessageId(message.id);
+                setShowDeleteModal(true);
               }}
             />
           </button>
           <span className="img">
-            <img src={message.imglink} />
+            <img
+              src={message.imglink}
+              onClick={() => {
+                setShowImgModal(true);
+                setSelectedImgSrc(message.imglink);
+              }}
+              alt="img"
+            />
           </span>
           <span className="time">{message.time.split(",")[0]}</span>
         </div>
+        {showdeletemodal && <DeleteModal type={"Image"} />}
+        {showImgmodal && <ImgModal />}
+      </>
     );
   };
-  const ImgReceived = ({message}) => {
+  const ImgReceived = ({ message }) => {
     return (
+      <>
         <div className="imgreceived">
-          <button className="dd">
+          {/* <button className="dd">
             <MdDelete
               className="ddIcon"
               onClick={() => {
-                deletemsg(message)
+                setSelectedMessageId(message.id);
+                setShowDeleteModal(true);
               }}
             />
-          </button>
+          </button> */}
           <span className="img">
-            <img src={message.imglink} />
+            <img
+              src={message.imglink}
+              alt="image"
+              onClick={() => {
+                setShowImgModal(true);
+                setSelectedImgSrc(message.imglink);
+              }}
+            />
           </span>
           <span className="time">{message.time.split(",")[0]}</span>
         </div>
+        {showdeletemodal && <DeleteModal />}
+        {showImgmodal && <ImgModal />}
+      </>
     );
   };
   return (
@@ -279,8 +381,8 @@ function SendBar({ sendMessage, dummyUserId }) {
   return (
     <div className="sendBar">
       <div className="botIcons">
-        <CgSmileMouthOpen />
-        <AiOutlinePaperClip onClick={handleClick} />
+        <CgSmileMouthOpen className="boticon" />
+        <AiOutlinePaperClip className="boticon" onClick={handleClick} />
         <input
           type="file"
           ref={hiddenFileInput}

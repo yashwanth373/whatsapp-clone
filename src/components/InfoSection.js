@@ -4,19 +4,12 @@ import { IoExitOutline, IoCamera } from "react-icons/io5";
 import { MdEdit } from "react-icons/md";
 import { GrCheckmark } from "react-icons/gr";
 
-export default function InfoSection({ setinfoOpen }) {
+export default function InfoSection({ setinfoOpen, setGroup, group }) {
   const [ddtoggle, setddtoggle] = useState(false);
   const [editgname, setEditgname] = useState(false);
   const [editgdesc, setEditgdesc] = useState(false);
-  const [group, setGroup] = useState({
-    id: "",
-    name: "Dance Group",
-    desc: "",
-    img: "",
-    users: [],
-    createdAt: "10:56,26/03/2021",
-  });
   const wref = useRef(null);
+  const fref = useRef(null);
   function useOutsideAlerter(ref) {
     useEffect(() => {
       function handleClickOutside(event) {
@@ -36,7 +29,6 @@ export default function InfoSection({ setinfoOpen }) {
     hiddenFileInput.current.click();
   };
   const handleChange = (event) => {
-    let date = new Date();
     var reader = new FileReader();
     reader.readAsDataURL(event.target.files[0]);
     reader.onload = function (e) {
@@ -63,7 +55,7 @@ export default function InfoSection({ setinfoOpen }) {
   }
   function Edit({ value, changefield }) {
     function handleSubmit(e) {
-      if (changefield === "name") {
+      if (changefield === "name" && e.target.value !== "") {
         setGroup({ ...group, name: e.target.value });
       } else if (changefield === "desc") {
         setGroup({ ...group, desc: e.target.value });
@@ -74,13 +66,14 @@ export default function InfoSection({ setinfoOpen }) {
     if (changefield === "name") {
       return (
         <div className="editform">
-          <form autoComplete="off" onSubmit={(e) => handleSubmit(e)}>
+          <form ref={fref} autoComplete="off" onSubmit={(e) => handleSubmit(e)}>
             <input
               type="text"
               maxLength="15"
               autoFocus="autoFocus"
               name="editgname"
               className="editgname"
+              required
               value={value}
               onChange={(e) => setGroup({ ...group, name: e.target.value })}
             />
