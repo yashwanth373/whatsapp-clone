@@ -2,14 +2,15 @@ import React, { useState, useEffect, useRef } from "react";
 import { IoMdClose, IoMdThumbsDown } from "react-icons/io";
 import { IoExitOutline, IoCamera } from "react-icons/io5";
 import { MdEdit } from "react-icons/md";
-import { GrCheckmark } from "react-icons/gr";
+import db from "../firebase";
 
-export default function InfoSection({ setinfoOpen, setGroup, group }) {
+export default function InfoSection({ setinfoOpen, group, setGroup }) {
   const [ddtoggle, setddtoggle] = useState(false);
   const [editgname, setEditgname] = useState(false);
   const [editgdesc, setEditgdesc] = useState(false);
   const wref = useRef(null);
   const fref = useRef(null);
+  const [gname, setGname] = useState(group.name);
   function useOutsideAlerter(ref) {
     useEffect(() => {
       function handleClickOutside(event) {
@@ -53,29 +54,50 @@ export default function InfoSection({ setinfoOpen, setGroup, group }) {
       </div>
     );
   }
-  function Edit({ value, changefield }) {
-    function handleSubmit(e) {
-      if (changefield === "name" && e.target.value !== "") {
-        setGroup({ ...group, name: e.target.value });
-      } else if (changefield === "desc") {
-        setGroup({ ...group, desc: e.target.value });
+  function updateDb(group) {
+    db.collection("groups")
+      .doc(group.id)
+      .set(group)
+      .then(() => {
+        console.log("Document successfully written!");
+      })
+      .catch((error) => {
+        console.error("Error writing document: ", error);
+      });
+  }
+  function handleSubmit(e, changefield) {
+    e.preventDefault();
+    if (changefield === "name") {
+      if (gname === "") {
+        setGname(group.name);
+        setEditgname(false);
+      } else {
+        setGroup({ ...group, name: gname });
+        updateDb({...group,name:gname});
+        setEditgname(false);
       }
-
-      e.preventDefault();
+    } else {
+      setEditgdesc(false);
+      updateDb(group);
     }
+  }
+  function Edit({ value, changefield }) {
     if (changefield === "name") {
       return (
         <div className="editform">
-          <form ref={fref} autoComplete="off" onSubmit={(e) => handleSubmit(e)}>
+          <form
+            ref={fref}
+            autoComplete="off"
+            onSubmit={(e) => handleSubmit(e, changefield)}
+          >
             <input
               type="text"
               maxLength="15"
               autoFocus="autoFocus"
               name="editgname"
               className="editgname"
-              required
-              value={value}
-              onChange={(e) => setGroup({ ...group, name: e.target.value })}
+              value={gname}
+              onChange={(e) => setGname(e.target.value)}
             />
           </form>
         </div>
@@ -83,7 +105,10 @@ export default function InfoSection({ setinfoOpen, setGroup, group }) {
     } else if (changefield === "desc") {
       return (
         <div className="editform">
-          <form autoComplete="off" onSubmit={(e) => handleSubmit(e)}>
+          <form
+            autoComplete="off"
+            onSubmit={(e) => handleSubmit(e, changefield)}
+          >
             <input
               type="text"
               autoFocus="autoFocus"
@@ -145,7 +170,7 @@ export default function InfoSection({ setinfoOpen, setGroup, group }) {
                 setEditgname(!editgname);
               }}
             >
-              {!editgname ? <MdEdit /> : <GrCheckmark />}
+              {!editgname ? <MdEdit /> : <></>}
             </span>
           </div>
         </div>
@@ -168,7 +193,7 @@ export default function InfoSection({ setinfoOpen, setGroup, group }) {
               setEditgdesc(!editgdesc);
             }}
           >
-            {!editgdesc ? <MdEdit /> : <GrCheckmark />}
+            {!editgdesc ? <MdEdit /> : <></>}
           </span>
         </div>
         <div className="infoFooter">

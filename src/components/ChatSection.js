@@ -6,33 +6,62 @@ import { MdMic, MdDelete } from "react-icons/md";
 import { IoMdClose } from "react-icons/io";
 import db from "../firebase";
 export default function ChatSection({ setinfoOpen, width, group }) {
-  let dummyUserId = 2750192;
+  const userID = "6QsAI72VdaaNWXaHh2BV";
   const [messages, setMessages] = useState([]);
+  const [usernames, setUsernames] = useState([]);
+
   useEffect(() => {
-    db.collection("groups/" + group.id + "/messages").onSnapshot((snapshot) => {
-      snapshot.docs.map((doc) => {
-        setMessages([...messages,doc.data()])
+    db.collection("groups/" + group.id + "/messages")
+      .orderBy("time")
+      .onSnapshot((snapshot) => {
+        setMessages(snapshot.docs.map((doc) =>{
+          return {
+            id:doc.id,
+            ...doc.data()
+          }
+        }));
       });
+  }, []);
+  useEffect(() => {
+    let snaps = group.users.map((userid) => {
+      let snap = db.collection("users").doc(userid).get();
+      return snap;
+    });
+    Promise.all(snaps).then((docs) => {
+      setUsernames(
+        docs.map((doc) => {
+          return { id: doc.id, name: doc.data().name };
+        })
+      );
     });
   }, []);
 
   function sendMessage(message) {
-    setMessages([...messages, message]);
+    db.collection("groups/" + group.id + "/messages")
+      .add(message)
+      .then((docRef) => {
+        console.log("Document written with ID: ", docRef.id);
+      })
+      .catch((error) => {
+        console.error("Error adding document: ", error);
+      });
   }
   return (
     <div className="chat" style={{ width: width }}>
       <TopBar
         name={group.name}
-        users={group.users}
+        usernames={usernames}
         img={group.img}
         setinfoOpen={setinfoOpen}
       />
       <MessageSection
         messages={messages}
-        dummyUserId={dummyUserId}
+        userID={userID}
         setMessages={setMessages}
+        usernames={usernames}
+        groupID={group.id}
       />
-      <SendBar sendMessage={sendMessage} dummyUserId={dummyUserId} />
+      <SendBar sendMessage={sendMessage} userID={userID} />
     </div>
   );
 }
@@ -51,35 +80,18 @@ function useOutsideAlerter(ref, setddtoggle, ddtoggle) {
   }, [ref, ddtoggle]);
 }
 
-function TopBar({ name, users, img, setinfoOpen }) {
-  console.log(users);
-  let names = [];
-  const [usernames, setUsernames] = useState([]);
-  useEffect(() => {
-    let snaps = users.map((userId) => {
-      let snap = db.collection("users").doc(userId).get();
-      return snap;
-    });
-    Promise.all(snaps).then((docs) => {
-      setUsernames(
-        docs.map((doc) => {
-          return doc.data().name;
-        })
-      );
-    });
-  }, []);
+function TopBar({ name, usernames, img, setinfoOpen }) {
   const [ddtoggle, setddtoggle] = useState(false);
   const wref = useRef(null);
   useOutsideAlerter(wref, setddtoggle, ddtoggle);
-  function UserNamesList(){
-    let dummynames=[]
-    for(var i=0;i<usernames.length-1;i++)
-    {
-      dummynames.push(usernames[i])
-      dummynames.push(",")
+  function UserNamesList() {
+    let dummynames = [];
+    for (var i = 0; i < usernames.length - 1; i++) {
+      dummynames.push(Object.values(usernames[i])[1]);
+      dummynames.push(", ");
     }
-    dummynames.push(usernames[i])
-    return <>{dummynames}</>
+    dummynames.push(Object.values(usernames[i])[1]);
+    return <>{dummynames}</>;
   }
   function DropDown() {
     return (
@@ -118,9 +130,11 @@ function TopBar({ name, users, img, setinfoOpen }) {
           setinfoOpen(true);
         }}
       >
-        <section className="gName"><span>{name}</span></section>
+        <section className="gName">
+          <span>{name}</span>
+        </section>
         <section className="gMembers">
-          {usernames.length !== 0 ? <UserNamesList/>:""}
+          {usernames.length !== 0 ? <UserNamesList /> : ""}
         </section>
       </div>
       <div className="icons">
@@ -135,7 +149,13 @@ function TopBar({ name, users, img, setinfoOpen }) {
   );
 }
 
-function MessageSection({ messages, dummyUserId, setMessages }) {
+function MessageSection({ messages, userID, setMessages, usernames,groupID }) {
+  const color = "#029d00";
+  useEffect(() => {
+    messages.sort(function (a, b) {
+      return new Date(b.time.seconds * 1000) - new Date(a.time.seconds * 1000);
+    });
+  }, []);
   const [showdeletemodal, setShowDeleteModal] = useState(false);
   const [showImgmodal, setShowImgModal] = useState(false);
   const [selectedmessageId, setSelectedMessageId] = useState("");
@@ -148,6 +168,16 @@ function MessageSection({ messages, dummyUserId, setMessages }) {
   useEffect(scrollToBottom, [messages]);
   function deletemsg() {
     setMessages(messages.filter((msg) => msg.id !== selectedmessageId));
+    console.log(selectedmessageId)
+    db.collection("groups/" + groupID + "/messages")
+      .doc(selectedmessageId)
+      .delete()
+      .then(() => {
+        console.log("Document successfully deleted!");
+      })
+      .catch((error) => {
+        console.error("Error removing document: ", error);
+      });
   }
 
   function DeleteModal({ type }) {
@@ -191,6 +221,11 @@ function MessageSection({ messages, dummyUserId, setMessages }) {
     );
   }
   function Sent({ message }) {
+    console.log(message)
+    var d = new Date(message.time);
+    let time = d.toTimeString().split(" ")[0];
+    let [h, m, s] = time.split(":");
+    let hm = h + ":" + m;
     return (
       <>
         <div className="sent">
@@ -204,34 +239,41 @@ function MessageSection({ messages, dummyUserId, setMessages }) {
               }}
             />
           </button>
-          <span className="time">{message.time.split(",")[0]}</span>
+          <span className="time">{hm}</span>
         </div>
         {showdeletemodal && <DeleteModal type={"Message"} />}
       </>
     );
   }
   function Received({ message }) {
+    var d = new Date(message.time);
+    let time = d.toTimeString().split(" ")[0];
+    let [h, m, s] = time.split(":");
+    let hm = h + ":" + m;
+    let name = "";
+    for (let n of usernames) {
+      if (n.id === message.sender) {
+        name = n.name;
+      }
+    }
     return (
       <>
         <div className="received">
-          {/* <button className="dd">
-            <MdDelete
-              className="ddIcon"
-              onClick={() => {
-                setSelectedMessageId(message.id);
-                setShowDeleteModal(true);
-              }}
-            />
-          </button> */}
+          <span className="name" style={{ color: color }}>
+            {name}
+          </span>
           <span className="msg">{message.message}</span>
-          <span className="time">{message.time.split(",")[0]}</span>
+          <span className="time">{hm}</span>
         </div>
         {showdeletemodal && <DeleteModal />}
       </>
     );
   }
   const ImgSent = ({ message }) => {
-    console.log(message);
+    var d = new Date(message.time);
+    let time = d.toTimeString().split(" ")[0];
+    let [h, m, s] = time.split(":");
+    let hm = h + ":" + m;
     return (
       <>
         <div className="imgsent">
@@ -254,7 +296,7 @@ function MessageSection({ messages, dummyUserId, setMessages }) {
               alt="img"
             />
           </span>
-          <span className="time">{message.time.split(",")[0]}</span>
+          <span className="time">{hm}</span>
         </div>
         {showdeletemodal && <DeleteModal type={"Image"} />}
         {showImgmodal && <ImgModal />}
@@ -262,18 +304,22 @@ function MessageSection({ messages, dummyUserId, setMessages }) {
     );
   };
   const ImgReceived = ({ message }) => {
+    var d = new Date(message.time);
+    let time = d.toTimeString().split(" ")[0];
+    let [h, m, s] = time.split(":");
+    let hm = h + ":" + m;
+    let name = "";
+    for (let n of usernames) {
+      if (n.id === message.sender) {
+        name = n.name;
+      }
+    }
     return (
       <>
         <div className="imgreceived">
-          {/* <button className="dd">
-            <MdDelete
-              className="ddIcon"
-              onClick={() => {
-                setSelectedMessageId(message.id);
-                setShowDeleteModal(true);
-              }}
-            />
-          </button> */}
+          <span className="name" style={{ color: color }}>
+            {name}
+          </span>
           <span className="img">
             <img
               src={message.imglink}
@@ -284,7 +330,7 @@ function MessageSection({ messages, dummyUserId, setMessages }) {
               }}
             />
           </span>
-          <span className="time">{message.time.split(",")[0]}</span>
+          <span className="time">{hm}</span>
         </div>
         {showdeletemodal && <DeleteModal />}
         {showImgmodal && <ImgModal />}
@@ -297,13 +343,13 @@ function MessageSection({ messages, dummyUserId, setMessages }) {
         {messages.map((message) =>
           !message.type ? (
             message.message !== "" ? (
-              message.senderId === dummyUserId ? (
+              message.sender === userID ? (
                 <Sent message={message} />
               ) : (
                 <Received message={message} />
               )
             ) : null
-          ) : message.senderId === dummyUserId ? (
+          ) : message.sender === userID ? (
             <ImgSent message={message} />
           ) : (
             <ImgReceived message={message} />
@@ -315,39 +361,25 @@ function MessageSection({ messages, dummyUserId, setMessages }) {
   );
 }
 
-function SendBar({ sendMessage, dummyUserId }) {
+function SendBar({ sendMessage, userID }) {
   const [message, setMessage] = useState({
-    id: "",
-    senderId: null,
+    sender: "",
     message: "",
-    time: "",
+    time: null,
   });
   function handleSubmit(e) {
-    let date = new Date();
     sendMessage({
       ...message,
-      id: Date.now(),
       message: message.message,
-      senderId: dummyUserId,
-      time:
-        date.getHours() +
-        ":" +
-        ((date.getMinutes() < 10 ? "0" : "") + date.getMinutes()) +
-        "," +
-        date.getDate() +
-        "/" +
-        (date.getMonth() + 1) +
-        "/" +
-        date.getFullYear(),
+      sender: userID,
+      time: Date.now(),
     });
     setMessage({
-      id: "",
-      senderId: "",
+      sender: "",
       message: "",
-      time: "",
+      time: null,
     });
     e.preventDefault();
-    // setMessage(e.target.value)
   }
   const hiddenFileInput = useRef(null);
   const handleClick = () => {
@@ -360,20 +392,10 @@ function SendBar({ sendMessage, dummyUserId }) {
     reader.onload = function (e) {
       sendMessage({
         ...message,
-        id: Date.now(),
         type: "img",
         imglink: reader.result,
-        senderId: dummyUserId,
-        time:
-          date.getHours() +
-          ":" +
-          ((date.getMinutes() < 10 ? "0" : "") + date.getMinutes()) +
-          "," +
-          date.getDate() +
-          "/" +
-          (date.getMonth() + 1) +
-          "/" +
-          date.getFullYear(),
+        sender: userID,
+        time: Date.now(),
       });
     };
   };
