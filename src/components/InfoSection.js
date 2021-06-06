@@ -2,12 +2,14 @@ import React, { useState, useEffect, useRef } from "react";
 import { IoMdClose, IoMdThumbsDown } from "react-icons/io";
 import { IoExitOutline, IoCamera } from "react-icons/io5";
 import { MdEdit } from "react-icons/md";
-import db from "../firebase";
+import {db,firebase} from "../firebase";
 
 export default function InfoSection({ setinfoOpen, group, setGroup }) {
+  const userID = "6QsAI72VdaaNWXaHh2BV";
   const [ddtoggle, setddtoggle] = useState(false);
   const [editgname, setEditgname] = useState(false);
   const [editgdesc, setEditgdesc] = useState(false);
+  const [showexitmodal, setShowExitModal] = useState(false);
   const wref = useRef(null);
   const fref = useRef(null);
   const [gname, setGname] = useState(group.name);
@@ -73,7 +75,7 @@ export default function InfoSection({ setinfoOpen, group, setGroup }) {
         setEditgname(false);
       } else {
         setGroup({ ...group, name: gname });
-        updateDb({...group,name:gname});
+        updateDb({ ...group, name: gname });
         setEditgname(false);
       }
     } else {
@@ -122,95 +124,145 @@ export default function InfoSection({ setinfoOpen, group, setGroup }) {
       );
     }
   }
-  return (
-    <div className="info">
-      <div className="infoTop">
-        <span className="closeIcon">
-          <IoMdClose onClick={() => setinfoOpen(false)} />
-        </span>
-        <span className="grpinfo">Group Info</span>
-      </div>
-      <div className="infoRest">
-        <div className="infodetails">
-          <div className="infodp">
-            {group.img !== "" ? (
-              <img src={group.img} alt="dp" />
-            ) : (
-              <img
-                src="https://lh3.googleusercontent.com/ABlX4ekWIQimPjZ1HlsMLYXibPo2xiWnZ2iny1clXQm2IQTcU2RG0-4S1srWsBQmGAo=s300"
-                alt="dp"
-              />
-            )}
-            <div className="dphover" onClick={() => setddtoggle(true)}>
-              <div>
-                <IoCamera className="camicon" />
-              </div>
-              <div className="changedp">CHANGE GROUP</div>
-              <div className="changedp">ICON</div>
+  function exitgrp() {
+    db.collection("groups")
+      .doc(group.id)
+      .update({
+        users: firebase.firestore.FieldValue.arrayRemove(userID),
+      });
+    db.collection("users")
+      .doc(userID)
+      .update({
+        Groups: firebase.firestore.FieldValue.arrayRemove(group.id),
+      });
+  }
+  function ExitModal() {
+    return (
+      <div className="modalBack">
+        <div className="modal">
+          <div className="modalTitle">Exit Group?</div>
+          <div className="modalbuttons">
+            <div
+              className="cancelbutton"
+              onClick={() => {
+                setShowExitModal(false);
+              }}
+            >
+              CANCEL
+            </div>
+            <div
+              className="deletebutton"
+              onClick={() => {
+                setShowExitModal(false);
+                exitgrp();
+              }}
+            >
+              EXIT
             </div>
           </div>
-          {ddtoggle && <DropDown />}
-          <div className="infomain">
-            <div className="infogname">
-              <span className="infoname">
-                {editgname ? (
-                  <Edit changefield={"name"} value={group.name} />
-                ) : (
-                  group.name
-                )}
+        </div>
+      </div>
+    );
+  }
+  return (
+    <>
+      <div className="info">
+        <div className="infoTop">
+          <span className="closeIcon">
+            <IoMdClose onClick={() => setinfoOpen(false)} />
+          </span>
+          <span className="grpinfo">Group Info</span>
+        </div>
+        <div className="infoRest">
+          <div className="infodetails">
+            <div className="infodp">
+              {group.img !== "" ? (
+                <img src={group.img} alt="dp" />
+              ) : (
+                <img
+                  src="https://lh3.googleusercontent.com/ABlX4ekWIQimPjZ1HlsMLYXibPo2xiWnZ2iny1clXQm2IQTcU2RG0-4S1srWsBQmGAo=s300"
+                  alt="dp"
+                />
+              )}
+              <div className="dphover" onClick={() => setddtoggle(true)}>
+                <div>
+                  <IoCamera className="camicon" />
+                </div>
+                <div className="changedp">CHANGE GROUP</div>
+                <div className="changedp">ICON</div>
+              </div>
+            </div>
+            {ddtoggle && <DropDown />}
+            <div className="infomain">
+              <div className="infogname">
+                <span className="infoname">
+                  {editgname ? (
+                    <Edit changefield={"name"} value={group.name} />
+                  ) : (
+                    group.name
+                  )}
+                </span>
+                <span className="infodate">
+                  Created {group.createdAt.split(",")[1]} at{" "}
+                  {group.createdAt.split(",")[0]}
+                </span>
+              </div>
+              <span
+                className="editicon"
+                onClick={() => {
+                  setEditgname(!editgname);
+                }}
+              >
+                {!editgname ? <MdEdit /> : <></>}
               </span>
-              <span className="infodate">
-                Created {group.createdAt.split(",")[1]} at{" "}
-                {group.createdAt.split(",")[0]}
+            </div>
+          </div>
+          <div className="infoDesc">
+            <div className="infoadesc">
+              <span className="desc">Description</span>
+              <span className="gdesc">
+                {editgdesc ? (
+                  <Edit changefield={"desc"} value={group.desc} />
+                ) : group.desc === "" ? (
+                  "Add group description"
+                ) : (
+                  <div className="agdesc">{group.desc}</div>
+                )}
               </span>
             </div>
             <span
               className="editicon"
               onClick={() => {
-                setEditgname(!editgname);
+                setEditgdesc(!editgdesc);
               }}
             >
-              {!editgname ? <MdEdit /> : <></>}
+              {!editgdesc ? <MdEdit /> : <></>}
             </span>
           </div>
-        </div>
-        <div className="infoDesc">
-          <div className="infoadesc">
-            <span className="desc">Description</span>
-            <span className="gdesc">
-              {editgdesc ? (
-                <Edit changefield={"desc"} value={group.desc} />
-              ) : group.desc === "" ? (
-                "Add group description"
-              ) : (
-                <div className="agdesc">{group.desc}</div>
-              )}
-            </span>
-          </div>
-          <span
-            className="editicon"
-            onClick={() => {
-              setEditgdesc(!editgdesc);
-            }}
-          >
-            {!editgdesc ? <MdEdit /> : <></>}
-          </span>
-        </div>
-        <div className="infoFooter">
-          <div className="exitbutton">
-            <span className="exiticon">
-              <IoExitOutline />
-            </span>
-            <span className="exit"> Exit group</span>
-          </div>
-          <div className="reportbutton">
-            <span className="reporticon">
-              <IoMdThumbsDown />
-            </span>
-            <span className="report"> Report group</span>
+          <div className="infoFooter">
+            <div className="exitbutton">
+              <span className="exiticon">
+                <IoExitOutline />
+              </span>
+              <span
+                className="exit"
+                onClick={() => {
+                  setShowExitModal(true);
+                }}
+              >
+                Exit group
+              </span>
+            </div>
+            <div className="reportbutton">
+              <span className="reporticon">
+                <IoMdThumbsDown />
+              </span>
+              <span className="report"> Report group</span>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+      {showexitmodal && <ExitModal />}
+    </>
   );
 }

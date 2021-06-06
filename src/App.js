@@ -1,41 +1,35 @@
-import React, { useState, useEffect } from "react";
 import "./App.css";
-import ChatSection from "./components/ChatSection";
-import ContactsSection from "./components/ContactsSection";
-import InfoSection from "./components/InfoSection";
-import db from "./firebase"
-
+import "./App2.css";
+import Login from "./pages/Login";
+import SignUp from "./pages/SignUp";
+import Home from "./pages/Home";
+import { BrowserRouter, Redirect, Route, Switch } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { auth } from "./firebase";
 
 function App() {
-  const [infoOpen, setinfoOpen] = useState(false);
-  const [group, setGroup] = useState();
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
-    db.collection("groups").onSnapshot((snapshot) => {
-      snapshot.docs.map((doc) => {
-        setGroup({
-          id: doc.id,
-          ...doc.data(),
-        });
-      });
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setLoading(false);
+      setLoggedIn(user !== null);
     });
+    return unsubscribe;
   }, []);
 
   return (
-    <>
-      {group && (
-        <div className="container">
-          <ContactsSection />
-          <ChatSection
-            setinfoOpen={setinfoOpen}
-            width={infoOpen ? "40%" : "70%"}
-            group={group}
-          />
-          {infoOpen && (
-            <InfoSection setinfoOpen={setinfoOpen} group={group} setGroup={setGroup} />
-          )}
-        </div>
-      )}
-    </>
+    <BrowserRouter>
+      <Switch>
+        {loggedIn && <Route exact path="/" component={Home} />}
+        {!loggedIn && <Route exact path="/login" component={Login} />}
+        {!loggedIn && <Route exact path="/signup" component={SignUp} />}
+        {!loggedIn && (
+          <Route exact path="/loading" component={() => <p>loading...</p>} />
+        )}
+        <Redirect exact to={loading ? "/loading" : loggedIn ? "/" : "login"} />
+      </Switch>
+    </BrowserRouter>
   );
 }
 

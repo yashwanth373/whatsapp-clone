@@ -4,7 +4,7 @@ import { BiDotsVerticalRounded } from "react-icons/bi";
 import { CgSmileMouthOpen } from "react-icons/cg";
 import { MdMic, MdDelete } from "react-icons/md";
 import { IoMdClose } from "react-icons/io";
-import db from "../firebase";
+import {db,firebase } from "../firebase";
 export default function ChatSection({ setinfoOpen, width, group }) {
   const userID = "6QsAI72VdaaNWXaHh2BV";
   const [messages, setMessages] = useState([]);
@@ -14,12 +14,14 @@ export default function ChatSection({ setinfoOpen, width, group }) {
     db.collection("groups/" + group.id + "/messages")
       .orderBy("time")
       .onSnapshot((snapshot) => {
-        setMessages(snapshot.docs.map((doc) =>{
-          return {
-            id:doc.id,
-            ...doc.data()
-          }
-        }));
+        setMessages(
+          snapshot.docs.map((doc) => {
+            return {
+              id: doc.id,
+              ...doc.data(),
+            };
+          })
+        );
       });
   }, []);
   useEffect(() => {
@@ -53,6 +55,7 @@ export default function ChatSection({ setinfoOpen, width, group }) {
         usernames={usernames}
         img={group.img}
         setinfoOpen={setinfoOpen}
+        group={group}
       />
       <MessageSection
         messages={messages}
@@ -80,8 +83,10 @@ function useOutsideAlerter(ref, setddtoggle, ddtoggle) {
   }, [ref, ddtoggle]);
 }
 
-function TopBar({ name, usernames, img, setinfoOpen }) {
+function TopBar({ name, usernames, img, setinfoOpen, group }) {
   const [ddtoggle, setddtoggle] = useState(false);
+  const [modaltoggle, setModalToggle] = useState(false);
+  const [addemail, setAddEmail] = useState();
   const wref = useRef(null);
   useOutsideAlerter(wref, setddtoggle, ddtoggle);
   function UserNamesList() {
@@ -92,6 +97,70 @@ function TopBar({ name, usernames, img, setinfoOpen }) {
     }
     dummynames.push(Object.values(usernames[i])[1]);
     return <>{dummynames}</>;
+  }
+  function addmember(id) {
+    db.collection("groups")
+      .doc(group.id)
+      .update({
+        users: firebase.firestore.FieldValue.arrayUnion(id),
+      });
+    db.collection("users").doc(id).update({
+      Groupd:firebase.firestore.FieldValue.arrayUnion(group.id)
+    })
+  }
+  function handleSubmit(e) {
+    e.preventDefault();
+    setModalToggle(false);
+    db.collection("users")
+      .where("email", "==", addemail)
+      .get()
+      .then((snap) => {
+        snap.forEach((doc) => {
+          addmember(doc.id)
+        });
+      });
+  }
+  function Modal() {
+    return (
+      <div className="modalBack">
+        <div className="addmodal">
+          <form autoComplete="off" onSubmit={(e) => handleSubmit(e)}>
+            <div className="modalTitle">Enter Contact's email</div>
+            <div className="modalForm">
+              <input
+                type="email"
+                autoFocus="autoFocus"
+                name="addemail"
+                className="addemail"
+                value={addemail}
+                onChange={(e) => setAddEmail(e.target.value)}
+              />
+            </div>
+            <div className="modalbuttons">
+              <div
+                className="cancelbutton"
+                onClick={() => {
+                  setModalToggle(false);
+                  setAddEmail("");
+                }}
+              >
+                CANCEL
+              </div>
+              <div
+                className="deletebutton"
+                onClick={(e) => {
+                  setModalToggle(false);
+                  handleSubmit(e)
+
+                }}
+              >
+                ADD
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
   }
   function DropDown() {
     return (
@@ -106,7 +175,15 @@ function TopBar({ name, usernames, img, setinfoOpen }) {
           Contact info
         </span>
         <span className="ddItem">Select Messages</span>
-        <span className="ddItem">Mute Notifications</span>
+        <span
+          className="ddItem"
+          onClick={() => {
+            setModalToggle(true);
+            setddtoggle(false);
+          }}
+        >
+          Add Participant
+        </span>
         <span className="ddItem">Delete Chat</span>
       </div>
     );
@@ -145,11 +222,12 @@ function TopBar({ name, usernames, img, setinfoOpen }) {
         />
       </div>
       {ddtoggle && <DropDown />}
+      {modaltoggle && <Modal />}
     </div>
   );
 }
 
-function MessageSection({ messages, userID, setMessages, usernames,groupID }) {
+function MessageSection({ messages, userID, setMessages, usernames, groupID }) {
   const color = "#029d00";
   useEffect(() => {
     messages.sort(function (a, b) {
@@ -168,7 +246,7 @@ function MessageSection({ messages, userID, setMessages, usernames,groupID }) {
   useEffect(scrollToBottom, [messages]);
   function deletemsg() {
     setMessages(messages.filter((msg) => msg.id !== selectedmessageId));
-    console.log(selectedmessageId)
+    console.log(selectedmessageId);
     db.collection("groups/" + groupID + "/messages")
       .doc(selectedmessageId)
       .delete()
@@ -182,25 +260,27 @@ function MessageSection({ messages, userID, setMessages, usernames,groupID }) {
 
   function DeleteModal({ type }) {
     return (
-      <div className="modal">
-        <div className="modalTitle">Delete {type}?</div>
-        <div className="modalbuttons">
-          <div
-            className="cancelbutton"
-            onClick={() => {
-              setShowDeleteModal(false);
-            }}
-          >
-            CANCEL
-          </div>
-          <div
-            className="deletebutton"
-            onClick={() => {
-              setShowDeleteModal(false);
-              deletemsg();
-            }}
-          >
-            DELETE
+      <div className="modalBack">
+        <div className="modal">
+          <div className="modalTitle">Delete {type}?</div>
+          <div className="modalbuttons">
+            <div
+              className="cancelbutton"
+              onClick={() => {
+                setShowDeleteModal(false);
+              }}
+            >
+              CANCEL
+            </div>
+            <div
+              className="deletebutton"
+              onClick={() => {
+                setShowDeleteModal(false);
+                deletemsg();
+              }}
+            >
+              DELETE
+            </div>
           </div>
         </div>
       </div>
@@ -221,7 +301,7 @@ function MessageSection({ messages, userID, setMessages, usernames,groupID }) {
     );
   }
   function Sent({ message }) {
-    console.log(message)
+    console.log(message);
     var d = new Date(message.time);
     let time = d.toTimeString().split(" ")[0];
     let [h, m, s] = time.split(":");

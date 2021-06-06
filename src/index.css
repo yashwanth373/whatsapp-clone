@@ -8,17 +8,6 @@ body {
   overflow-x: hidden;
   overflow-y: hidden;
 }
-.top {
-  width: 100vw;
-  height: 16vh;
-  background-color: #009688;
-}
-.rest {
-  width: 100vw;
-  height: 84vh;
-  background-color: #d9dbd5;
-
-}
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
