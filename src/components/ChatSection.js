@@ -4,9 +4,9 @@ import { BiDotsVerticalRounded } from "react-icons/bi";
 import { CgSmileMouthOpen } from "react-icons/cg";
 import { MdMic, MdDelete } from "react-icons/md";
 import { IoMdClose } from "react-icons/io";
-import {db,firebase } from "../firebase";
-export default function ChatSection({ setinfoOpen, width, group }) {
-  const userID = "6QsAI72VdaaNWXaHh2BV";
+import { db, firebase, auth } from "../firebase";
+export default function ChatSection({ setinfoOpen, width, group,setGroup }) {
+  const userID = auth.currentUser.uid;
   const [messages, setMessages] = useState([]);
   const [usernames, setUsernames] = useState([]);
 
@@ -14,6 +14,7 @@ export default function ChatSection({ setinfoOpen, width, group }) {
     db.collection("groups/" + group.id + "/messages")
       .orderBy("time")
       .onSnapshot((snapshot) => {
+        console.log(group.id)
         setMessages(
           snapshot.docs.map((doc) => {
             return {
@@ -23,7 +24,7 @@ export default function ChatSection({ setinfoOpen, width, group }) {
           })
         );
       });
-  }, []);
+  }, [group]);
   useEffect(() => {
     let snaps = group.users.map((userid) => {
       let snap = db.collection("users").doc(userid).get();
@@ -32,11 +33,12 @@ export default function ChatSection({ setinfoOpen, width, group }) {
     Promise.all(snaps).then((docs) => {
       setUsernames(
         docs.map((doc) => {
+          console.log(doc.data());
           return { id: doc.id, name: doc.data().name };
         })
       );
     });
-  }, []);
+  }, [group]);
 
   function sendMessage(message) {
     db.collection("groups/" + group.id + "/messages")
@@ -56,6 +58,7 @@ export default function ChatSection({ setinfoOpen, width, group }) {
         img={group.img}
         setinfoOpen={setinfoOpen}
         group={group}
+        setGroup={setGroup}
       />
       <MessageSection
         messages={messages}
@@ -83,12 +86,13 @@ function useOutsideAlerter(ref, setddtoggle, ddtoggle) {
   }, [ref, ddtoggle]);
 }
 
-function TopBar({ name, usernames, img, setinfoOpen, group }) {
+function TopBar({ name, usernames, img, setinfoOpen, group,setGroup }) {
   const [ddtoggle, setddtoggle] = useState(false);
   const [modaltoggle, setModalToggle] = useState(false);
   const [addemail, setAddEmail] = useState();
   const wref = useRef(null);
   useOutsideAlerter(wref, setddtoggle, ddtoggle);
+
   function UserNamesList() {
     let dummynames = [];
     for (var i = 0; i < usernames.length - 1; i++) {
@@ -104,9 +108,13 @@ function TopBar({ name, usernames, img, setinfoOpen, group }) {
       .update({
         users: firebase.firestore.FieldValue.arrayUnion(id),
       });
-    db.collection("users").doc(id).update({
-      Groupd:firebase.firestore.FieldValue.arrayUnion(group.id)
-    })
+    console.log(group.id)
+    db.collection("users")
+      .doc(id)
+      .update({
+        Groups: firebase.firestore.FieldValue.arrayUnion(group.id),
+      });
+
   }
   function handleSubmit(e) {
     e.preventDefault();
@@ -116,7 +124,7 @@ function TopBar({ name, usernames, img, setinfoOpen, group }) {
       .get()
       .then((snap) => {
         snap.forEach((doc) => {
-          addmember(doc.id)
+          addmember(doc.id);
         });
       });
   }
@@ -150,8 +158,7 @@ function TopBar({ name, usernames, img, setinfoOpen, group }) {
                 className="deletebutton"
                 onClick={(e) => {
                   setModalToggle(false);
-                  handleSubmit(e)
-
+                  handleSubmit(e);
                 }}
               >
                 ADD
@@ -261,7 +268,7 @@ function MessageSection({ messages, userID, setMessages, usernames, groupID }) {
   function DeleteModal({ type }) {
     return (
       <div className="modalBack">
-        <div className="modal">
+        <div className="ownmodal">
           <div className="modalTitle">Delete {type}?</div>
           <div className="modalbuttons">
             <div
@@ -301,7 +308,6 @@ function MessageSection({ messages, userID, setMessages, usernames, groupID }) {
     );
   }
   function Sent({ message }) {
-    console.log(message);
     var d = new Date(message.time);
     let time = d.toTimeString().split(" ")[0];
     let [h, m, s] = time.split(":");
@@ -466,7 +472,6 @@ function SendBar({ sendMessage, userID }) {
     hiddenFileInput.current.click();
   };
   const handleChange = (event) => {
-    let date = new Date();
     var reader = new FileReader();
     reader.readAsDataURL(event.target.files[0]);
     reader.onload = function (e) {

@@ -18,9 +18,9 @@ export default function SignUp() {
         try {
           await auth
             .createUserWithEmailAndPassword(email, password)
-            .then((user) => {
+            .then(({user}) => {
               console.log(user.uid)
-              db.collection("users").doc(user.uid).set({name:name,email:email,Groups:[],img:""})
+              db.collection("users").doc(user.uid).set({name:name,email:email,Groups:[],img:"",bio:""})
                 .then((docRef) => {
                   console.log("Document written with ID: ", docRef.id);
                 })

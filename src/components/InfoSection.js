@@ -2,17 +2,22 @@ import React, { useState, useEffect, useRef } from "react";
 import { IoMdClose, IoMdThumbsDown } from "react-icons/io";
 import { IoExitOutline, IoCamera } from "react-icons/io5";
 import { MdEdit } from "react-icons/md";
-import {db,firebase} from "../firebase";
+import { db, firebase, auth } from "../firebase";
 
 export default function InfoSection({ setinfoOpen, group, setGroup }) {
-  const userID = "6QsAI72VdaaNWXaHh2BV";
+  const userID = auth.currentUser.uid;
   const [ddtoggle, setddtoggle] = useState(false);
   const [editgname, setEditgname] = useState(false);
   const [editgdesc, setEditgdesc] = useState(false);
   const [showexitmodal, setShowExitModal] = useState(false);
   const wref = useRef(null);
   const fref = useRef(null);
-  const [gname, setGname] = useState(group.name);
+  const [gname, setGname] = useState();
+  useEffect(() => {
+    updateDb(group);
+    setGroup(group);
+    setGname(group.name);
+  }, [group]);
   function useOutsideAlerter(ref) {
     useEffect(() => {
       function handleClickOutside(event) {
@@ -30,6 +35,7 @@ export default function InfoSection({ setinfoOpen, group, setGroup }) {
   const hiddenFileInput = useRef(null);
   const handleClick = () => {
     hiddenFileInput.current.click();
+    setddtoggle(false);
   };
   const handleChange = (event) => {
     var reader = new FileReader();
@@ -47,12 +53,6 @@ export default function InfoSection({ setinfoOpen, group, setGroup }) {
         <span className="dpddItem" onClick={handleClick}>
           Upload Photo
         </span>
-        <input
-          type="file"
-          ref={hiddenFileInput}
-          onChange={handleChange}
-          style={{ display: "none" }}
-        />
       </div>
     );
   }
@@ -96,6 +96,7 @@ export default function InfoSection({ setinfoOpen, group, setGroup }) {
               type="text"
               maxLength="15"
               autoFocus="autoFocus"
+              spellCheck="false"
               name="editgname"
               className="editgname"
               value={gname}
@@ -114,6 +115,7 @@ export default function InfoSection({ setinfoOpen, group, setGroup }) {
             <input
               type="text"
               autoFocus="autoFocus"
+              spellCheck="false"
               name="editgdesc"
               className="editgdesc"
               value={value}
@@ -139,7 +141,7 @@ export default function InfoSection({ setinfoOpen, group, setGroup }) {
   function ExitModal() {
     return (
       <div className="modalBack">
-        <div className="modal">
+        <div className="ownmodal">
           <div className="modalTitle">Exit Group?</div>
           <div className="modalbuttons">
             <div
@@ -155,6 +157,7 @@ export default function InfoSection({ setinfoOpen, group, setGroup }) {
               onClick={() => {
                 setShowExitModal(false);
                 exitgrp();
+                setGroup();
               }}
             >
               EXIT
@@ -162,6 +165,20 @@ export default function InfoSection({ setinfoOpen, group, setGroup }) {
           </div>
         </div>
       </div>
+    );
+  }
+  function GetCreatedAt({ cgroup }) {
+    var d = new Date(cgroup.createdAt);
+    let time = d.toTimeString().split(" ")[0];
+    let [h, m, s] = time.split(":");
+    var hm = h + ":" + m;
+    console.log(cgroup.createdAt);
+    var dt = d.getDate() + "/" + (d.getMonth() + 1) + "/" + d.getFullYear();
+    console.log(dt);
+    return (
+      <>
+        Created on {dt} at {hm}
+      </>
     );
   }
   return (
@@ -192,6 +209,14 @@ export default function InfoSection({ setinfoOpen, group, setGroup }) {
                 <div className="changedp">ICON</div>
               </div>
             </div>
+            <input
+              type="file"
+              ref={hiddenFileInput}
+              onChange={(e) => {
+                handleChange(e);
+              }}
+              style={{ display: "none" }}
+            />
             {ddtoggle && <DropDown />}
             <div className="infomain">
               <div className="infogname">
@@ -203,8 +228,7 @@ export default function InfoSection({ setinfoOpen, group, setGroup }) {
                   )}
                 </span>
                 <span className="infodate">
-                  Created {group.createdAt.split(",")[1]} at{" "}
-                  {group.createdAt.split(",")[0]}
+                  {group && <GetCreatedAt cgroup={group} />}
                 </span>
               </div>
               <span

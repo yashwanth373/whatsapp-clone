@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { auth, db } from "../firebase";
+import { auth} from "../firebase";
 
 export default function Login() {
   const emailRef = useRef();
