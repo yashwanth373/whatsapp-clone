@@ -170,7 +170,7 @@ export default function InfoSection({ setinfoOpen, group, setGroup }) {
   function GetCreatedAt({ cgroup }) {
     var d = new Date(cgroup.createdAt);
     let time = d.toTimeString().split(" ")[0];
-    let [h, m, s] = time.split(":");
+    let [h, m,] = time.split(":");
     var hm = h + ":" + m;
     console.log(cgroup.createdAt);
     var dt = d.getDate() + "/" + (d.getMonth() + 1) + "/" + d.getFullYear();
@@ -194,11 +194,12 @@ export default function InfoSection({ setinfoOpen, group, setGroup }) {
           <div className="infodetails">
             <div className="infodp">
               {group.img !== "" ? (
-                <img src={group.img} alt="dp" />
+                <img src={group.img} alt="dp" style={{ objectFit: "cover" }} />
               ) : (
                 <img
                   src="https://lh3.googleusercontent.com/ABlX4ekWIQimPjZ1HlsMLYXibPo2xiWnZ2iny1clXQm2IQTcU2RG0-4S1srWsBQmGAo=s300"
                   alt="dp"
+                  style={{ objectFit: "cover" }}
                 />
               )}
               <div className="dphover" onClick={() => setddtoggle(true)}>

@@ -5,7 +5,7 @@ import { CgSmileMouthOpen } from "react-icons/cg";
 import { MdMic, MdDelete } from "react-icons/md";
 import { IoMdClose } from "react-icons/io";
 import { db, firebase, auth } from "../firebase";
-export default function ChatSection({ setinfoOpen, width, group,setGroup }) {
+export default function ChatSection({ setinfoOpen, width, group, setGroup }) {
   const userID = auth.currentUser.uid;
   const [messages, setMessages] = useState([]);
   const [usernames, setUsernames] = useState([]);
@@ -14,7 +14,7 @@ export default function ChatSection({ setinfoOpen, width, group,setGroup }) {
     db.collection("groups/" + group.id + "/messages")
       .orderBy("time")
       .onSnapshot((snapshot) => {
-        console.log(group.id)
+        console.log(group.id);
         setMessages(
           snapshot.docs.map((doc) => {
             return {
@@ -86,7 +86,7 @@ function useOutsideAlerter(ref, setddtoggle, ddtoggle) {
   }, [ref, ddtoggle]);
 }
 
-function TopBar({ name, usernames, img, setinfoOpen, group,setGroup }) {
+function TopBar({ name, usernames, img, setinfoOpen, group, setGroup }) {
   const [ddtoggle, setddtoggle] = useState(false);
   const [modaltoggle, setModalToggle] = useState(false);
   const [addemail, setAddEmail] = useState();
@@ -108,13 +108,12 @@ function TopBar({ name, usernames, img, setinfoOpen, group,setGroup }) {
       .update({
         users: firebase.firestore.FieldValue.arrayUnion(id),
       });
-    console.log(group.id)
+    console.log(group.id);
     db.collection("users")
       .doc(id)
       .update({
         Groups: firebase.firestore.FieldValue.arrayUnion(group.id),
       });
-
   }
   function handleSubmit(e) {
     e.preventDefault();
@@ -199,12 +198,18 @@ function TopBar({ name, usernames, img, setinfoOpen, group,setGroup }) {
     <div className="topBar">
       <div onClick={() => setinfoOpen(true)}>
         {img !== "" ? (
-          <img className="dp" src={img} alt="dp" />
+          <img
+            className="dp"
+            src={img}
+            alt="dp"
+            style={{ objectFit: "cover" }}
+          />
         ) : (
           <img
             className="dp"
             src="https://lh3.googleusercontent.com/ABlX4ekWIQimPjZ1HlsMLYXibPo2xiWnZ2iny1clXQm2IQTcU2RG0-4S1srWsBQmGAo=s300"
             alt="dp"
+            style={{ objectFit: "cover" }}
           />
         )}
       </div>
@@ -247,7 +252,7 @@ function MessageSection({ messages, userID, setMessages, usernames, groupID }) {
   const [selectedImgSrc, setSelectedImgSrc] = useState("");
   const messagesEndRef = useRef(null);
   const scrollToBottom = () => {
-    messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current.scrollIntoView();
   };
 
   useEffect(scrollToBottom, [messages]);
@@ -303,14 +308,14 @@ function MessageSection({ messages, userID, setMessages, usernames, groupID }) {
             }}
           />
         </span>
-        <img src={selectedImgSrc} alt="image" />
+        <img src={selectedImgSrc} alt="selectedimg" />
       </div>
     );
   }
   function Sent({ message }) {
     var d = new Date(message.time);
     let time = d.toTimeString().split(" ")[0];
-    let [h, m, s] = time.split(":");
+    let [h, m,] = time.split(":");
     let hm = h + ":" + m;
     return (
       <>
@@ -334,7 +339,7 @@ function MessageSection({ messages, userID, setMessages, usernames, groupID }) {
   function Received({ message }) {
     var d = new Date(message.time);
     let time = d.toTimeString().split(" ")[0];
-    let [h, m, s] = time.split(":");
+    let [h, m] = time.split(":");
     let hm = h + ":" + m;
     let name = "";
     for (let n of usernames) {
@@ -358,7 +363,7 @@ function MessageSection({ messages, userID, setMessages, usernames, groupID }) {
   const ImgSent = ({ message }) => {
     var d = new Date(message.time);
     let time = d.toTimeString().split(" ")[0];
-    let [h, m, s] = time.split(":");
+    let [h, m] = time.split(":");
     let hm = h + ":" + m;
     return (
       <>
@@ -375,6 +380,7 @@ function MessageSection({ messages, userID, setMessages, usernames, groupID }) {
           <span className="img">
             <img
               src={message.imglink}
+              style={{ objectFit: "cover" }}
               onClick={() => {
                 setShowImgModal(true);
                 setSelectedImgSrc(message.imglink);
@@ -392,7 +398,7 @@ function MessageSection({ messages, userID, setMessages, usernames, groupID }) {
   const ImgReceived = ({ message }) => {
     var d = new Date(message.time);
     let time = d.toTimeString().split(" ")[0];
-    let [h, m, s] = time.split(":");
+    let [h, m,] = time.split(":");
     let hm = h + ":" + m;
     let name = "";
     for (let n of usernames) {
@@ -409,7 +415,7 @@ function MessageSection({ messages, userID, setMessages, usernames, groupID }) {
           <span className="img">
             <img
               src={message.imglink}
-              alt="image"
+              alt="messageimg"
               onClick={() => {
                 setShowImgModal(true);
                 setSelectedImgSrc(message.imglink);
@@ -441,7 +447,7 @@ function MessageSection({ messages, userID, setMessages, usernames, groupID }) {
             <ImgReceived message={message} />
           )
         )}
-        <div ref={messagesEndRef} />
+        <div ref={messagesEndRef} style={{padding:10}}/>
       </div>
     </div>
   );

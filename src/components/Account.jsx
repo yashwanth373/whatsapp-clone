@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { MdClose, MdEdit } from "react-icons/md";
-import { auth, db } from "../firebase";
+import { db } from "../firebase";
 import { IoCamera } from "react-icons/io5";
 
 export default function Account({ show, close,user,setUser }) {
@@ -9,7 +9,6 @@ export default function Account({ show, close,user,setUser }) {
   const [editbio, setEditbio] = useState(false);
   const hiddenFileInput = useRef(null);
   const [name, setName] = useState(user.name);
-  const [bio, setBio] = useState();
   const wref = useRef(null);
   const fref = useRef(null);
   const handleClick = () => {
@@ -116,12 +115,18 @@ export default function Account({ show, close,user,setUser }) {
           </div>
           <div className="infodp">
             {user.img !== "" ? (
-              <img src={user.img} alt="dp" className="account-img" />
+              <img
+                src={user.img}
+                alt="dp"
+                className="account-img"
+                style={{ objectFit: "cover" }}
+              />
             ) : (
               <img
                 src="https://picsum.photos/1000/1000"
                 alt="dp"
                 className="account-img"
+                style={{ objectFit: "cover" }}
               />
             )}
             <div className="dphover" onClick={() => setddtoggle(true)}>
@@ -152,7 +157,7 @@ export default function Account({ show, close,user,setUser }) {
                   )}
                 </p>
                 <span
-                className="editicon"
+                  className="editicon"
                   onClick={() => {
                     setEditname(!editname);
                   }}

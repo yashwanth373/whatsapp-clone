@@ -1,5 +1,5 @@
 
-export default function ChatsList({ setGroup,list }) {
+export default function ChatsList({ setGroup,list,selectedGrpId }) {
   return (
     <div className="list">
       {list.length === 0 ? (
@@ -8,7 +8,7 @@ export default function ChatsList({ setGroup,list }) {
         list.map((item, i) => (
           <div
             key={i}
-            className="list-item"
+            className={"list-item " +(item.id===selectedGrpId?"active-item":"")}
             onClick={() => {
               setGroup(item);
             }}
@@ -20,6 +20,7 @@ export default function ChatsList({ setGroup,list }) {
                   ? item.img
                   : "https://lh3.googleusercontent.com/ABlX4ekWIQimPjZ1HlsMLYXibPo2xiWnZ2iny1clXQm2IQTcU2RG0-4S1srWsBQmGAo=s300"
               }
+              style={{ objectFit: "cover" }}
               alt="."
             />
             <div className="ml-1">

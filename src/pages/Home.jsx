@@ -38,7 +38,7 @@ function App() {
       <div className="top2" />
       <div className="rest" />
       <div className="owncontainer">
-        <ContactsSection setGroup={setGroup} list={groups} />
+        <ContactsSection setGroup={setGroup} list={groups} selectedGrpId={group?.id} />
         {group && (
           <ChatSection
             setinfoOpen={setinfoOpen}

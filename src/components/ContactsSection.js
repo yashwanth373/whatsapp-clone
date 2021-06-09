@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
-import { MdClose, MdEdit, MdSearch, MdChat, MdMoreVert } from "react-icons/md";
+import {MdSearch, MdChat, MdMoreVert } from "react-icons/md";
 import { RiDonutChartLine } from "react-icons/ri";
 import ChatsList from "./ChatsList";
 import Account from "./Account";
 import { auth, db, firebase } from "../firebase";
 
-export default function ContactsSection({ setGroup, list }) {
+export default function ContactsSection({ setGroup, list,selectedGrpId }) {
   const [show, setShow] = useState(false);
   const [modaltoggle, setModalToggle] = useState(false);
   const [newgrp, setNewGrp] = useState();
@@ -149,6 +149,7 @@ export default function ContactsSection({ setGroup, list }) {
               src={user.img}
               alt="dp"
               className="avatar"
+              style={{ objectFit: "cover" }}
               onClick={() => {
                 setShow(true);
               }}
@@ -158,6 +159,7 @@ export default function ContactsSection({ setGroup, list }) {
               src="https://picsum.photos/1000/1000"
               alt="dp"
               className="avatar"
+              style={{ objectFit: "cover" }}
               onClick={() => {
                 setShow(true);
               }}
@@ -186,7 +188,7 @@ export default function ContactsSection({ setGroup, list }) {
           </div>
         </div>
       </div>
-      <ChatsList setGroup={setGroup} list={list} />
+      <ChatsList setGroup={setGroup} list={list} selectedGrpId={selectedGrpId} />
     </div>
   );
 }
