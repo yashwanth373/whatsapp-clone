@@ -5,6 +5,12 @@
 
 This project is a clone of Whatsapp web.
 
+## Website
+
+This project is hosted using github pages. Application has been deployed to the below link.
+
+https://yashwanth-17.github.io/whatsapp-clone/
+
 
 ## Features
 
@@ -96,11 +102,6 @@ To deploy this project run
 ```
 
   
-## Website
-
-This project is hosted using github pages. Application has been deployed to the below link.
-
-https://yashwanth-17.github.io/whatsapp-clone/
 
   
 ## Authors
